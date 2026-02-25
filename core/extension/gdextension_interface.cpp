@@ -43,6 +43,8 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
+#include "servers/text/text_server.h"
+
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;
 	void *token;
@@ -1706,6 +1708,18 @@ static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data)
 #endif
 }
 
+static const void *gdextension_nocopy_shaped_text_get_glyphs(uint64_t p_shaped_rid) {
+	return TS->shaped_text_get_glyphs(RID::from_uint64(p_shaped_rid));
+}
+
+static const void *gdextension_nocopy_shaped_text_sort_logical(uint64_t p_shaped_rid) {
+	return TS->shaped_text_sort_logical(RID::from_uint64(p_shaped_rid));
+}
+
+static const void *gdextension_nocopy_shaped_text_get_ellipsis_glyphs(uint64_t p_shaped_rid) {
+	return TS->shaped_text_get_ellipsis_glyphs(RID::from_uint64(p_shaped_rid));
+}
+
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
 void gdextension_setup_interface() {
@@ -1886,6 +1900,10 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(editor_help_load_xml_from_utf8_chars_and_len);
 	REGISTER_INTERFACE_FUNC(image_ptrw);
 	REGISTER_INTERFACE_FUNC(image_ptr);
+
+	REGISTER_INTERFACE_FUNC(nocopy_shaped_text_get_glyphs);
+	REGISTER_INTERFACE_FUNC(nocopy_shaped_text_sort_logical);
+	REGISTER_INTERFACE_FUNC(nocopy_shaped_text_get_ellipsis_glyphs);
 }
 
 #undef REGISTER_INTERFACE_FUNCTION
