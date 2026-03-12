@@ -93,7 +93,7 @@ const Engine = (function () {
 					return new Promise(function (resolve, reject) {
 						promise.then(function (response) {
 							const cloned = new Response(response.clone().body, { 'headers': [['content-type', 'application/wasm']] });
-							Godot(me.config.getModuleConfig(loadPath, cloned)).then(function (module) {
+							Godot(me.config.getModuleConfig(loadPath, cloned, preloader.preloadedLibraries)).then(function (module) {
 								const paths = me.config.persistentPaths;
 								module['initFS'](paths).then(function (err) {
 									me.rtenv = module;
@@ -129,6 +129,18 @@ const Engine = (function () {
 			 */
 			preloadFile: function (file, path) {
 				return preloader.preload(file, path, this.config.fileSizes[file]);
+			},
+
+			/**
+			 * Pre-load a dynamic library. Must be called **before** starting the
+			 * instance.
+			 *
+			 * @param {string} file The file to preload.
+			 *
+			 * @returns {Promise} A Promise that resolves once the file is loaded.
+			 */
+			preloadLibrary: function (name) {
+				return preloader.preloadLibrary(name, this.config.fileSizes[name]);
 			},
 
 			/**
@@ -204,7 +216,10 @@ const Engine = (function () {
 				return Promise.all([
 					this.init(exe),
 					this.preloadFile(pack, pack),
-				]).then(function () {
+					this.preloadLibrary(`${exe}.side.wasm`),
+				].concat(this.config.gdextensionLibs.map(function (name) {
+					return me.preloadLibrary(name);
+				}))).then(function () {
 					return me.start.apply(me);
 				});
 			},
@@ -255,6 +270,7 @@ const Engine = (function () {
 		// Closure compiler exported instance methods.
 		Engine.prototype['init'] = Engine.prototype.init;
 		Engine.prototype['preloadFile'] = Engine.prototype.preloadFile;
+		Engine.prototype['preloadLibrary'] = Engine.prototype.preloadLibrary;
 		Engine.prototype['start'] = Engine.prototype.start;
 		Engine.prototype['startGame'] = Engine.prototype.startGame;
 		Engine.prototype['copyToFS'] = Engine.prototype.copyToFS;

@@ -280,8 +280,9 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 	 * @ignore
 	 * @param {string} loadPath
 	 * @param {Response} response
+	 * @param {Array<{name: string, library: WebAssembly.Module}>} preloadedLibraries
 	 */
-	Config.prototype.getModuleConfig = function (loadPath, response) {
+	Config.prototype.getModuleConfig = function (loadPath, response, preloadedLibraries) {
 		let r = response;
 		const gdext = this.gdextensionLibs;
 		return {
@@ -292,7 +293,14 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 			'dynamicLibraries': [`${loadPath}.side.wasm`].concat(this.gdextensionLibs),
 			'emscriptenPoolSize': this.emscriptenPoolSize,
 			'instantiateWasm': function (imports, onSuccess) {
+				const me = this;
 				function done(result) {
+					preloadedLibraries.forEach(function (file) {
+						me['preloadedWasm'][file.name] = me['loadWebAssemblyModule'](file.library, {
+							nodelete: true,
+							allowUndefined: true,
+						}, file.name);
+					});
 					onSuccess(result['instance'], result['module']);
 				}
 				if (typeof (WebAssembly.instantiateStreaming) !== 'undefined') {

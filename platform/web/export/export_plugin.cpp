@@ -554,6 +554,16 @@ Error EditorExportPlatformWeb::export_project(const Ref<EditorExportPreset> &p_p
 	if (f.is_valid()) {
 		file_sizes[base_name + ".wasm"] = (uint64_t)f->get_length();
 	}
+	f = FileAccess::open(base_path + ".side.wasm", FileAccess::READ);
+	if (f.is_valid()) {
+		file_sizes[base_name + ".side.wasm"] = (uint64_t)f->get_length();
+	}
+	for (int i = 0; i < shared_objects.size(); i++) {
+		f = FileAccess::open(shared_objects[i].path, FileAccess::READ);
+		if (f.is_valid()) {
+			file_sizes[shared_objects[i].path.get_file()] = (uint64_t)f->get_length();
+		}
+	}
 
 	// Read the HTML shell file (custom or from template).
 	const String html_path = custom_html.is_empty() ? base_path + ".html" : custom_html;

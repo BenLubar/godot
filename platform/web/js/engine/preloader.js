@@ -130,4 +130,16 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 		}
 		return Promise.reject(new Error('Invalid object for preloading'));
 	};
+
+	this.preloadedLibraries = [];
+	this.preloadLibrary = function (libraryName, fileSize) {
+		const me = this;
+		return this.loadPromise(libraryName, fileSize).then(WebAssembly.compile).then(function (lib) {
+			me.preloadedLibraries.push({
+				name: libraryName,
+				library: lib,
+			});
+			return Promise.resolve();
+		});
+	};
 };
