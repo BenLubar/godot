@@ -74,6 +74,7 @@ int AudioStreamPlaybackOpus::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 				}
 				active = false;
 				todo = 0;
+				return 0;
 			}
 			mixed_was_zero = true;
 		}
@@ -189,10 +190,6 @@ Ref<AudioStreamPlayback> AudioStreamOpus::instantiate_playback() {
 	ERR_FAIL_NULL_V(opus->opus_file, Ref<AudioStreamPlaybackOpus>());
 
 	return opus;
-}
-
-void AudioStreamOpus::clear_data() {
-	data.clear();
 }
 
 void AudioStreamOpus::set_data(const Vector<uint8_t> &p_data) {
